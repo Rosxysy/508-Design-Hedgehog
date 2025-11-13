@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class HedgehogController : MonoBehaviour
 {
@@ -8,12 +9,17 @@ public class HedgehogController : MonoBehaviour
     [SerializeField, Range(0f, 100f)]
     float maxAcceleration = 10f;
 
+     [SerializeField] Rolling rollingMovement;
+
     private Rigidbody rb;
     private Vector3 currentVelocity;
 
     [SerializeField]
     public Transform cameraTransform;
     public Transform initialTransform;
+
+    private bool rollingMode = false;
+     
 
     void Awake()
     {
@@ -33,7 +39,8 @@ public class HedgehogController : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.E))
         {
-            ToggleRotationContrainsts();
+            rollingMode = !rollingMode;
+            rollingMovement.SetRolling(rollingMode);
         }
 
     }
@@ -41,6 +48,15 @@ public class HedgehogController : MonoBehaviour
     {
         Movement();
         LookAtCamera();
+
+        if (rollingMode)
+        {
+            // Pass current horizontal velocity to the rolling script
+            Vector3 horizontalVelocity = rb.linearVelocity;
+            horizontalVelocity.y = 0f;
+            rollingMovement.Roll(horizontalVelocity);
+        }
+    
     }
 
     private void Movement()
@@ -65,27 +81,17 @@ public class HedgehogController : MonoBehaviour
         camRight.Normalize();
 
 
-        Vector3 desiredVelocity = (camRight * playerInput.x + camForward * playerInput.y) * maxSpeed;
+        Vector3 moveDir = camRight * playerInput.x + camForward * playerInput.y;
+        moveDir = Vector3.ClampMagnitude(moveDir, 1f);
 
-
-        currentVelocity = rb.linearVelocity;
-
-        float maxSpeedChange = maxAcceleration * Time.deltaTime;
-
-
-        currentVelocity.x = Mathf.MoveTowards(
-            currentVelocity.x,
-            desiredVelocity.x,
-            maxSpeedChange
-        );
-        currentVelocity.z = Mathf.MoveTowards(
-            currentVelocity.z,
-            desiredVelocity.z,
-            maxSpeedChange
-        );
-
-
-        rb.linearVelocity = currentVelocity;
+        NormalMove(moveDir);
+    
+        if (rollingMode)
+        {
+            // Rolling handled by separate script
+            rollingMovement.Roll(rb.linearVelocity);
+        }
+    
     }
 
     private void LookAtCamera() 
@@ -103,20 +109,9 @@ public class HedgehogController : MonoBehaviour
         rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRotation, Time.fixedDeltaTime * 10f));
     }
 
-    private void ToggleRotationContrainsts()
+    private void NormalMove(Vector3 moveDir)
     {
-        if (rb == null) return;
-
-        bool isRotationFrozen = (rb.constraints & RigidbodyConstraints.FreezeRotation) == RigidbodyConstraints.FreezeRotation;
-
-        if (isRotationFrozen)
-        {
-            rb.constraints &= ~RigidbodyConstraints.FreezeRotation;
-        }
-        else
-        {
-            rb.constraints |= RigidbodyConstraints.FreezeRotation;
-            this.transform.rotation = initialTransform.rotation;
-        }
+        Vector3 desiredVelocity = moveDir * maxSpeed;
+        rb.linearVelocity = new Vector3(desiredVelocity.x, rb.linearVelocity.y, desiredVelocity.z);
     }
 }
