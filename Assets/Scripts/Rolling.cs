@@ -20,6 +20,7 @@ public class Rolling : MonoBehaviour
     private float radius = 0.5f; // sphere radius for rotation speed
 
     private bool rollingEnabled = false;
+    public bool IsRolling => rollingEnabled;
 
     void Awake()
     {
@@ -33,8 +34,10 @@ public class Rolling : MonoBehaviour
         if (!enable)
             rb.linearVelocity = Vector3.zero;
     }
+
+    
     public void Roll(Vector3 rbVelocity)
-{
+    {
     if (!rollingEnabled || rbVelocity.sqrMagnitude < 0.01f)
             return;
         
@@ -47,6 +50,6 @@ public class Rolling : MonoBehaviour
         Vector3 rotationAxis = Vector3.Cross(Vector3.up, rbVelocity.normalized);
         visualModel.Rotate(rotationAxis, rotationAngle, Space.World);
     }
-}
+    }
 
 }

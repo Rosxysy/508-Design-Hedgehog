@@ -1,3 +1,4 @@
+using NUnit.Framework;
 using UnityEngine;
 
 public class ScranPickup : MonoBehaviour
@@ -19,8 +20,9 @@ public class ScranPickup : MonoBehaviour
     void OnTriggerEnter(Collider other)
     {
         
-        if (other.CompareTag("Player") & CompareTag("Scran"))
+        if (other.CompareTag("Player") && CompareTag("Scran") && other.GetComponentInParent<Rolling>()?.IsRolling == true)
         {
+            
             Debug.Log("Scran picked up by player!");
             Destroy(gameObject); // Remove scran from the ground
         }
