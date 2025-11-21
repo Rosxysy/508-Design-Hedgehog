@@ -1,16 +1,38 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class MenuManager : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+   
     void Start()
     {
         
     }
 
-    // Update is called once per frame
+    
     void Update()
     {
-        
+        if(Input.GetKey(KeyCode.Escape))
+        {
+            SceneManager.LoadScene(0);
+             Cursor.visible = true;
+             Cursor.lockState = CursorLockMode.None;
+        }
+    }
+
+    public void StartGame()
+    {
+        SceneManager.LoadScene(1);
+
+    }
+
+    public void BackToMainMenu()
+    {
+        SceneManager.LoadScene(0);
+    }
+
+    public void QuitGame()
+    {
+        Application.Quit();
     }
 }
