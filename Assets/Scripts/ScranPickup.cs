@@ -1,4 +1,3 @@
-using NUnit.Framework;
 using UnityEngine;
 
 public class ScranPickup : MonoBehaviour
@@ -25,6 +24,9 @@ public class ScranPickup : MonoBehaviour
             
             Debug.Log("Scran picked up by player!");
             Destroy(gameObject); // Remove scran from the ground
+            
+            if (UICounter.Instance != null)
+                UICounter.Instance.AddPoint();
         }
 }
 }
