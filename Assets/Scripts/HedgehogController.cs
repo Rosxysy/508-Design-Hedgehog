@@ -15,6 +15,11 @@ public class HedgehogController : MonoBehaviour
     [SerializeField]
     public Transform cameraTransform;
     private Quaternion initialRotation;
+    public bool IsRolling => rollingEnabled;
+
+    private bool rollingEnabled = false;
+
+    public CamZooms camZooms;
 
     private MeshRenderer meshRendererBall;
     public MeshRenderer meshRendererHog0;
@@ -50,9 +55,15 @@ public class HedgehogController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.E))
         {
             ToggleRotationContrainsts();
+            rollingEnabled = !rollingEnabled;
+            
+            if (camZooms != null) camZooms.ToggleZoomOut();
+
         }
         else if (Input.GetKeyUp(KeyCode.E))
         {
+            if (camZooms != null) camZooms.ToggleZoomIn();
+
             rb.constraints |= RigidbodyConstraints.FreezeRotation;
             this.transform.rotation = initialRotation;
 

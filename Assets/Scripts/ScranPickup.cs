@@ -19,7 +19,7 @@ public class ScranPickup : MonoBehaviour
     void OnTriggerEnter(Collider other)
     {
         
-        if (other.CompareTag("Player") && CompareTag("Scran") && other.GetComponentInParent<Rolling>()?.IsRolling == true)
+        if (other.CompareTag("Player") && CompareTag("Scran") && other.GetComponentInParent<HedgehogController>()?.IsRolling == true)
         {
             
             Debug.Log("Scran picked up by player!");
