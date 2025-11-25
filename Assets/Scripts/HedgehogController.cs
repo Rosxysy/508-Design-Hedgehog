@@ -1,5 +1,5 @@
+using UnityEditor.U2D;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 public class HedgehogController : MonoBehaviour
 {
@@ -9,21 +9,26 @@ public class HedgehogController : MonoBehaviour
     [SerializeField, Range(0f, 100f)]
     float maxAcceleration = 10f;
 
-     [SerializeField] Rolling rollingMovement;
-
     private Rigidbody rb;
     private Vector3 currentVelocity;
 
     [SerializeField]
     public Transform cameraTransform;
-    public Transform initialTransform;
+    private Quaternion initialRotation;
 
-    private bool rollingMode = false;
-     
+    private MeshRenderer meshRendererBall;
+    public MeshRenderer meshRendererHog0;
+    public MeshRenderer meshRendererHog1;
+    public MeshRenderer meshRendererHog2;
+    public MeshRenderer meshRendererHog3;
+    public GameObject hedgehogModel;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
+
+        meshRendererBall = GetComponent<MeshRenderer>();
+
 
 
         if (cameraTransform == null && Camera.main != null)
@@ -32,35 +37,48 @@ public class HedgehogController : MonoBehaviour
 
     void Start()
     {
+        meshRendererBall.enabled = false;
+        meshRendererHog0.enabled = true;
+        meshRendererHog1.enabled = true;
+        meshRendererHog2.enabled = true;
+        meshRendererHog3.enabled = true;
         Cursor.lockState = CursorLockMode.Locked;
-        initialTransform = this.transform;
+        initialRotation = this.transform.rotation;
     }
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.E))
         {
-            rollingMode = !rollingMode;
-            rollingMovement.SetRolling(rollingMode);
+            ToggleRotationContrainsts();
         }
+        else if (Input.GetKeyUp(KeyCode.E))
+        {
+            rb.constraints |= RigidbodyConstraints.FreezeRotation;
+            this.transform.rotation = initialRotation;
+
+            meshRendererBall.enabled = false;
+
+            meshRendererHog0.enabled = true;
+            meshRendererHog1.enabled = true;
+            meshRendererHog2.enabled = true;
+            meshRendererHog3.enabled = true;
+        }
+
 
     }
     void FixedUpdate()
     {
+
+
         Movement();
         LookAtCamera();
-
-        if (rollingMode)
-        {
-            // Pass current horizontal velocity to the rolling script
-            Vector3 horizontalVelocity = rb.linearVelocity;
-            horizontalVelocity.y = 0f;
-            rollingMovement.Roll(horizontalVelocity);
-        }
-    
     }
 
     private void Movement()
     {
+        //this.transform.rotation = Camera.main.transform.rotation;
+        
+
         Vector2 playerInput;
         playerInput.x = Input.GetAxis("Horizontal");
         playerInput.y = Input.GetAxis("Vertical");
@@ -81,37 +99,73 @@ public class HedgehogController : MonoBehaviour
         camRight.Normalize();
 
 
-        Vector3 moveDir = camRight * playerInput.x + camForward * playerInput.y;
-        moveDir = Vector3.ClampMagnitude(moveDir, 1f);
+        Vector3 desiredVelocity = (camRight * playerInput.x + camForward * playerInput.y) * maxSpeed;
 
-        NormalMove(moveDir);
-    
-        if (rollingMode)
+
+        currentVelocity = rb.linearVelocity;
+
+        float maxSpeedChange = maxAcceleration * Time.deltaTime;
+
+
+        currentVelocity.x = Mathf.MoveTowards(
+            currentVelocity.x,
+            desiredVelocity.x,
+            maxSpeedChange
+        );
+        currentVelocity.z = Mathf.MoveTowards(
+            currentVelocity.z,
+            desiredVelocity.z,
+            maxSpeedChange
+        );
+
+
+        rb.linearVelocity = currentVelocity;
+    }
+
+    private void LookAtCamera()
+    {
+        if (cameraTransform == null || hedgehogModel == null)
+        return;
+
+    // If ball is active → rolling → don't rotate hedgehog model
+    if (meshRendererBall != null && meshRendererBall.enabled)
+        return;
+
+    // Face the camera direction (but keep the model upright)
+    Vector3 forward = cameraTransform.forward;
+    forward.y = 0f;
+
+    if (forward.sqrMagnitude < 0.01f)
+        return;
+
+    Quaternion targetRotation = Quaternion.LookRotation(forward, Vector3.up);
+
+    hedgehogModel.transform.rotation = Quaternion.Slerp(
+        hedgehogModel.transform.rotation,
+        targetRotation,
+        10f * Time.deltaTime
+    );
+    }
+
+    private void ToggleRotationContrainsts()
+    {
+        if (rb == null) return;
+
+        bool isRotationFrozen = (rb.constraints & RigidbodyConstraints.FreezeRotation) == RigidbodyConstraints.FreezeRotation;
+
+        meshRendererBall.enabled = true;
+        meshRendererHog0.enabled = false;
+        meshRendererHog1.enabled = false;
+        meshRendererHog2.enabled = false;
+        meshRendererHog3.enabled = false;
+
+        rb.AddForce(Vector3.forward * 0.1f, ForceMode.Impulse);
+        
+
+        if (isRotationFrozen)
         {
-            // Rolling handled by separate script
-            rollingMovement.Roll(rb.linearVelocity);
+            rb.constraints &= ~RigidbodyConstraints.FreezeRotation;
         }
-    
-    }
 
-    private void LookAtCamera() 
-    {
-        if (cameraTransform == null || rb == null)
-            return;
-
-        Vector3 lookDirection = cameraTransform.position - transform.position;
-        lookDirection.y = 0f;
-
-        if (lookDirection.sqrMagnitude < 0.001f)
-            return;
-
-        Quaternion targetRotation = Quaternion.LookRotation(lookDirection.normalized, Vector3.up);
-        rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRotation, Time.fixedDeltaTime * 10f));
-    }
-
-    private void NormalMove(Vector3 moveDir)
-    {
-        Vector3 desiredVelocity = moveDir * maxSpeed;
-        rb.linearVelocity = new Vector3(desiredVelocity.x, rb.linearVelocity.y, desiredVelocity.z);
     }
 }
