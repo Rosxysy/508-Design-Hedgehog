@@ -57,12 +57,12 @@ public class HedgehogController : MonoBehaviour
             ToggleRotationContrainsts();
             rollingEnabled = !rollingEnabled;
             
-            if (camZooms != null) camZooms.ToggleZoomOut();
+            if (camZooms != null) camZooms.ToggleZoomIn();
 
         }
         else if (Input.GetKeyUp(KeyCode.E))
         {
-            if (camZooms != null) camZooms.ToggleZoomIn();
+            if (camZooms != null) camZooms.ToggleZoomOut();
 
             rb.constraints |= RigidbodyConstraints.FreezeRotation;
             this.transform.rotation = initialRotation;

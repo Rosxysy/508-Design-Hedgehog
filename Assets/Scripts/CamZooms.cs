@@ -1,47 +1,54 @@
 using Unity.Cinemachine;
+using Unity.VisualScripting;
+using UnityEditor.Search;
 using UnityEngine;
 
 public class CamZooms : MonoBehaviour
 {
 
+    public CinemachineFreeLook freeLookCam;
 
     
-
-
 
     public float zoomedOutFOV = 70f;
-    public float currentFOV;
     public float zoomspeed = 5f;
- public Camera camera ;
+
+    private float normalFOV;
+    private bool zoomingOut = false;
+
+
     
-
-    public bool zoomingOut = false;
-
-
-
     void Start()
     {
-       
+        if (freeLookCam == null)
+        {
+            freeLookCam = GetComponent<CinemachineFreeLook>();
+        }
 
-      currentFOV = camera.fieldOfView;
+        if (freeLookCam != null)
+        {
+            normalFOV = freeLookCam.m_Lens.FieldOfView;
+
+        }
     }
     void Update()
     {
-        if (zoomingOut == true)
-        {
-            currentFOV = zoomedOutFOV;
-        }
+        if (freeLookCam == null) return;
 
-        if(zoomingOut == false)
-        {
-            currentFOV = 50f;
-        }
-      
-       
-        camera.fieldOfView = Mathf.Lerp(camera.fieldOfView, currentFOV, Time.deltaTime * zoomspeed);
+        float targetFOV = zoomingOut ? zoomedOutFOV : normalFOV;
 
+        var lens = freeLookCam.m_Lens;
+        lens.FieldOfView = Mathf.Lerp(lens.FieldOfView, targetFOV, Time.deltaTime * zoomspeed);
+        freeLookCam.m_Lens = lens;
+
+        if(zoomingOut == true)
+        {
+            normalFOV = zoomedOutFOV;
+
+            Debug.Log("Zoomed Out");
+        }
     }
-
+        
 
     public void ToggleZoomOut()
     {
