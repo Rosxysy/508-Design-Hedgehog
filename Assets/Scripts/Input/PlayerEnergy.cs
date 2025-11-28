@@ -9,10 +9,13 @@ public class PlayerEnergy : MonoBehaviour
     [Tooltip("Energy lost per meter traveled.")]
     public float energyPerMeter = 1f;
 
+    public GameManager gameManager;
+
     private Vector3 lastPosition;
 
     void Start()
     {
+        
         lastPosition = transform.position;
         currentEnergy = maxEnergy;
     }
