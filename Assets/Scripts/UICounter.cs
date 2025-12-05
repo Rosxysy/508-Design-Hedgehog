@@ -88,4 +88,12 @@ public class UICounter : MonoBehaviour
     {
         return scran;
     }
+
+    public void ResetScran()
+    {
+        scran = 0;
+        if (scranText != null)
+            scranText.text = scran.ToString();
+        SaveScran();
+    }
 }

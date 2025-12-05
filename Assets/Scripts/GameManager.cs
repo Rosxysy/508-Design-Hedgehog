@@ -84,8 +84,16 @@ public class GameManager : MonoBehaviour
     {
          Debug.Log("Current Scene: " + SceneManager.GetActiveScene());
 
+      // If player presses X while in the Den scene, reset the UI scran count
+       if (Input.GetKeyDown(KeyCode.X) && SceneManager.GetActiveScene().name == DensceneName)
+       {
+           Debug.Log("X pressed in Den scene — resetting scran UI.");
+            if (UICounter.Instance != null)
+                UICounter.Instance.ResetScran();
+       }
+
       // Check if energy is at 1 and in the yard scene.
-      if (playerEnergy.currentEnergy == 1 && SceneManager.GetActiveScene().name == "SampleScene")
+      if (playerEnergy.currentEnergy == 1 && SceneManager.GetActiveScene().name == "SampleScene") //OR DAWN
         {
             Debug.Log("Condition met! Loading WinScene..."); // Debug message before loading
             SceneManager.LoadScene("Den");
@@ -105,6 +113,9 @@ public class GameManager : MonoBehaviour
             //SceneManager.LoadScene(DensceneName);
 
         }
+
+
+        //when in the den scene, if player collides with the door, load the Dawn scene. 
     }
 
     IEnumerator Fade(float startAlpha, float endAlpha)
