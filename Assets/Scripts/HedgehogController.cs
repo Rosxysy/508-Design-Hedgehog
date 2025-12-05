@@ -27,6 +27,7 @@ public class HedgehogController : MonoBehaviour
     public MeshRenderer meshRendererHog2;
     public MeshRenderer meshRendererHog3;
     public GameObject hedgehogModel;
+    public AudioSource rollingAudio;
 
     void Awake()
     {
@@ -58,6 +59,8 @@ public class HedgehogController : MonoBehaviour
             rollingEnabled = !rollingEnabled;
             
             if (camZooms != null) camZooms.ToggleZoomIn();
+            rollingAudio.Play();
+            Debug.Log("rolling");
 
         }
         else if (Input.GetKeyUp(KeyCode.E))
@@ -73,6 +76,8 @@ public class HedgehogController : MonoBehaviour
             meshRendererHog1.enabled = true;
             meshRendererHog2.enabled = true;
             meshRendererHog3.enabled = true;
+
+            rollingAudio.Stop();
         }
 
 

@@ -13,6 +13,7 @@ public class Rolling : MonoBehaviour
 
     [SerializeField] Transform visualModel; // The mesh that visually rotates
     [SerializeField] Transform cameraTransform;
+    [SerializeField] public AudioSource movementAudio;
 
     private Rigidbody rb;
     private Vector3 moveDirection;
@@ -21,6 +22,8 @@ public class Rolling : MonoBehaviour
 
     private bool rollingEnabled = false;
     public bool IsRolling => rollingEnabled;
+
+    public AudioClip rollingClip;
 
     void Awake()
     {
@@ -33,6 +36,7 @@ public class Rolling : MonoBehaviour
         rollingEnabled = enable;
         if (!enable)
             rb.linearVelocity = Vector3.zero;
+        movementAudio.Play();
     }
 
     
